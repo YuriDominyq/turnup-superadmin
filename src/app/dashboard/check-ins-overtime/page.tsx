@@ -7,7 +7,7 @@ import { filterByRange } from "../../../../utils/filterDate"
 import { checkInsOverTime } from "../../../../lib/data"
 import CheckInOvertimeChart from "../../../../components/CheckInOvertime"
 import SummaryCard from "../../../../components/SummaryCard"
-import { AreaChart, ArrowDown, ArrowUp, BarChart2, BarChart3, CalendarRange, Gauge, Lightbulb, MapPin } from "lucide-react"
+import { AreaChart, ArrowDown, ArrowUp, BarChart3, CalendarRange, Gauge, Lightbulb, MapPin } from "lucide-react"
 
 export default function CheckInOvertimeDetails() {
     const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 7))

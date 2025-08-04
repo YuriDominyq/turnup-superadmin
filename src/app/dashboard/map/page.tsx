@@ -3,6 +3,8 @@
 import { DrawingManager, GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
 import { useCallback, useState } from "react";
 
+import type { Libraries } from "@react-google-maps/api";
+
 const containerStyle = {
     width: '100%',
     height: '400px'
@@ -19,11 +21,11 @@ type Route = {
     path: { lat: number; lng: number }[];
 }
 
-const libraries = ['drawing'];
+const libraries: Libraries = ['drawing'];
 
 export default function MapPage() {
 
-    const [map, setMap] = useState<google.maps.Map | null>(null);
+    const setMap = useState<google.maps.Map | null>(null)[1];
     const [routeCoords, setRouteCoords] = useState<{ lat: number; lng: number }[] | null>(null)
     const [routeName, setRouteName] = useState<string>("");
     const [routes, setRoutes] = useState<Route[]>([]);
@@ -95,7 +97,7 @@ export default function MapPage() {
     }
 
     return (
-        <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!} libraries={libraries as any}>
+        <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!} libraries={libraries}>
             <div className="space-y-6">
                 <h1 className="text-3xl font-bold">Route Creator</h1>
 
