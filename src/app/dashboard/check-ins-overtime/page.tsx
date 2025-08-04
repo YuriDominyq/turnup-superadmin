@@ -8,16 +8,17 @@ import { checkInsOverTime } from "../../../../lib/data"
 import CheckInOvertimeChart from "../../../../components/CheckInOvertime"
 import SummaryCard from "../../../../components/SummaryCard"
 import { AreaChart, ArrowDown, ArrowUp, BarChart3, CalendarRange, Gauge, Lightbulb, MapPin } from "lucide-react"
+import { CheckInOverTimeData } from "../../../../lib/checkinovertimedata"
 
 export default function CheckInOvertimeDetails() {
     const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 7))
     const [endDate, setEndDate] = useState<Date>(new Date())
 
-    const filteredData = filterByRange(checkInsOverTime, startDate, endDate)
+    const filteredData: CheckInOverTimeData[] = filterByRange(checkInsOverTime, startDate, endDate)
 
-    const totalCheckIns = filteredData.reduce((sum, entry) => {
-        return sum + (entry.Granada || 0) + (entry.Homesite || 0) + (entry.FortuneTowne || 0)
-    }, 0)
+    const totalCheckIns = filteredData.reduce(
+        (sum, entry) => sum + entry.Granada + entry.Homesite + entry.FortuneTowne, 0
+    )
 
     return (
         <div className="max-w-4xl mx-auto px-4 py-6">
