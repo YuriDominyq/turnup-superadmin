@@ -13,7 +13,7 @@ type Props = {
 
 export default function CheckInOvertimeChart({ data }: Props) {
     return (
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height={350}>
             <AreaChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
                 <CartesianGrid stroke="#eee" />
                 <XAxis dataKey="day" interval={0} angle={-45} textAnchor="end" height={60} tick={{ fontSize: 12 }} />

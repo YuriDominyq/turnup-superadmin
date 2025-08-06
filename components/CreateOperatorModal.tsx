@@ -23,9 +23,28 @@ export default function CreateOperatorModal({ isOpen, onClose, onCreate }: Props
         terminal: "",
     })
 
+
     const handleSubmit = () => {
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const phoneRegex = /^(09\d{9}|\+639\d{9})$/
+
         if (!form.name.trim() || !form.email.trim()) {
             toast.error("Name and email are required!")
+            return
+        }
+
+        if (!emailRegex.test(form.email)) {
+            toast.error("Invalid email format!", {
+                icon: "⚠️",
+            })
+            return
+        }
+
+        if (!phoneRegex.test(form.phone)) {
+            toast.error("Invalid phone number format! Use 09XXXXXXXXX or +639XXXXXXXXX", {
+                icon: "⚠️",
+            })
             return
         }
 

@@ -8,6 +8,7 @@ export function filterByRange(
 ) {
   return data.filter((entry) => {
     const date = parseISO(entry.day);
+    console.log("Parsed Date:", date, "Valid:", !isNaN(date.getTime())); // 👈
     return isWithinInterval(date, { start, end });
   });
 }
