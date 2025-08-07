@@ -81,7 +81,7 @@ export default function OperatorsPage() {
     return (
         <div className="p-6 space-y-6">
             <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold text-gray-800">Operators</h1>
+                <h1 className="text-4xl font-extrabold tracking-tight text-gray-900">Operators</h1>
                 <button
                     onClick={() => setIsModalOpen(true)}
                     className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow transition-transform hover:scale-105 cursor-pointer"

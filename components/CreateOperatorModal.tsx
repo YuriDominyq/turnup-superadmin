@@ -7,8 +7,6 @@ import { FiUserPlus } from "react-icons/fi";
 import { toast } from "sonner";
 import { Operator } from "../lib/type";
 
-
-
 type Props = {
     isOpen: boolean;
     onClose: () => void;

@@ -1,9 +1,17 @@
 "use client";
 
-import { DrawingManager, GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
+import { LoadScript } from "@react-google-maps/api";
 import { useCallback, useState } from "react";
 
 import type { Libraries } from "@react-google-maps/api";
+import { toast } from "sonner";
+import { Pencil, Trash2 } from "lucide-react";
+import AddRouteForm from "../../../../components/AddRouteForm";
+import RouteMap from "../../../../components/RouteMap";
+import AddStopModal from "../../../../components/AddStopModal";
+import ToggleRouteListButton from "../../../../components/ToggleRouteListButton";
+import ClearRouteButton from "../../../../components/ClearRouteButton";
+import { motion, AnimatePresence } from "framer-motion";
 
 const containerStyle = {
     width: '100%',
@@ -67,24 +75,36 @@ export default function MapPage() {
     }, [])
 
     const handleAddRoute = () => {
-        const trimmedRouteName = routeName.trim();
-        if (!trimmedRouteName || stops.length === 0 || !routeCoords) return
 
-        const newRoute: Route = {
-            name: trimmedRouteName,
-            stops: [...stops],
-            path: [...routeCoords]
-        }
+        try {
+            const trimmedRouteName = routeName.trim();
+            if (!trimmedRouteName || stops.length === 0 || !routeCoords) return
 
-        setRoutes((prev) => [...prev, newRoute]);
+            const newRoute: Route = {
+                name: trimmedRouteName,
+                stops: [...stops],
+                path: [...routeCoords]
+            }
 
-        setRouteName("");
-        setStops([]);
-        setRouteCoords(null);
+            setRoutes((prev) => [...prev, newRoute]);
 
-        if (polylineRef) {
-            polylineRef.setMap(null);
-            setPolylineRef(null);
+            setRouteName("");
+            setStops([]);
+            setRouteCoords(null);
+
+            if (polylineRef) {
+                polylineRef.setMap(null);
+                setPolylineRef(null);
+            }
+
+            toast.success("Route Added successfully", {
+                icon: "🎉"
+            })
+        } catch (error) {
+            console.error("Error adding route:", error);
+            toast.error("Failed to add route. Please try again.", {
+                icon: "❌",
+            });
         }
     }
 
@@ -94,236 +114,157 @@ export default function MapPage() {
         setStops((prev) => [...prev, { ...selectedLatlng, name: stopName }]);
         setStopName("");
         setSelectedLatLng(null);
+        setIsModalOpen(false)
     }
 
     return (
-        <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!} libraries={libraries}>
-            <div className="space-y-6">
-                <h1 className="text-3xl font-bold">Route Creator</h1>
+        <LoadScript
+            googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}
+            libraries={libraries}
+        >
+            <div className="space-y-6 px-4 md:px-8 py-4 max-w-6xl mx-auto">
+                <h1 className="text-4xl font-extrabold tracking-tight text-gray-900">Route Creator</h1>
 
                 {/* Route Name Input */}
-                <form onSubmit={(e) => {
-                    e.preventDefault()
-                    if (!routeName.trim()) return
-
-                    console.log("Route Name Submitted:", routeName.trim());
-                }}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="routeName">Route Name</label>
-
-                    <div className="flex gap-2">
-                        <input
-                            id="routeName"
-                            type="text"
-                            value={routeName}
-                            onChange={(e) => setRouteName(e.target.value)}
-                            placeholder="e.g Granada to Burgos"
-                            className="flex-1 p-2 border rounded shadow-sm"
-                        />
-
-
-                        <button
-                            onClick={handleAddRoute}
-                            className={`px-4 py-2 rounded text-white ${!routeName.trim() ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 cursor-pointer'} mt-2`}
-                            disabled={!routeName.trim()}
-                        >
-                            ➕ Add
-                        </button>
-                    </div>
-                    {!routeName.trim() && (
-                        <p className="flex items-center text-red-600 text-sm mt-1 gap-1 transition-opacity duration-300 opacity-100">
-                            <span className="text-lg">⚠️</span>
-                            Route name is required
-                        </p>
-                    )}
-                </form>
-
+                <AddRouteForm
+                    routeName={routeName}
+                    setRouteName={setRouteName}
+                    handleAddRoute={handleAddRoute}
+                />
 
                 {/* Google Maps */}
 
-                <GoogleMap
-                    mapContainerStyle={containerStyle}
-                    center={center}
-                    zoom={13}
-                    onLoad={(mapInstance) => setMap(mapInstance)}
-                    onClick={handleMapClick}
-                >
-
-                    {typeof window !== "undefined" && window.google && window.google.maps && window.google.maps.drawing && (
-                        <DrawingManager
-                            onOverlayComplete={handleOverlayComplete}
-                            options={{
-                                drawingControl: true,
-                                drawingControlOptions: {
-                                    position: window.google.maps.ControlPosition.TOP_CENTER,
-                                    drawingModes: [window.google.maps.drawing.OverlayType.POLYLINE],
-                                },
-                                polylineOptions: {
-                                    strokeColor: '#2979FF',
-                                    strokeWeight: 8,
-                                },
-                            }}
-                        />
-                    )}
-
-                    {/* Stop Marker */}
-                    {stops.map((stop, i) => (
-                        <Marker
-                            key={i}
-                            position={{ lat: stop.lat, lng: stop.lng }}
-                            label={(i + 1).toString()}
-                            title={stop.name}
-                        />
-                    ))}
-
-                    {/* Temp marker */}
-
-                    {selectedLatlng && (
-                        <Marker
-                            position={selectedLatlng}
-                            icon={{
-                                url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-                            }}
-                        />
-                    )}
-                </GoogleMap>
+                <div className="rounded-xl overflow-hidden shadow-md border border-gray-200">
+                    <RouteMap
+                        containerStyle={containerStyle}
+                        center={center}
+                        setMap={setMap}
+                        stops={stops}
+                        selectedLatLng={selectedLatlng}
+                        handleMapClick={handleMapClick}
+                        handleOverlayComplete={handleOverlayComplete}
+                    />
+                </div>
 
                 {/* Add Stop Form */}
-
-                {isModalOpen && selectedLatlng && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                        <div className="bg-white backdrop-blur-md border border-white/20 p-6 rounded-xl shadow-lg w-full max-w-sm">
-                            <h2 className="text-lg font-semibold mb-2">🛑 Add Stop</h2>
-                            <p className="text-sm text-gray-600 mb-4">
-                                Coordinates: ({selectedLatlng.lat.toFixed(4)}, {selectedLatlng.lng.toFixed(4)})
-                            </p>
-
-                            <input
-                                type="text"
-                                value={stopName}
-                                onChange={(e) => setStopName(e.target.value)}
-                                placeholder="Enter stop name"
-                                className="w-full p-2 border rounded mb-3"
-                            />
-
-                            <div className="flex justify-end gap-2">
-
-                                <button
-                                    onClick={() => {
-                                        setIsModalOpen(false)
-                                        setStopName("")
-                                        setSelectedLatLng(null)
-                                    }}
-                                    className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 cursor-pointer"
-                                >
-                                    ❌ Cancel
-                                </button>
-
-                                <button
-                                    onClick={handleAddStop}
-                                    className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 cursor-pointer"
-                                >
-                                    ➕ Add Stop
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-
-                {/* List of Routes */}
-                <button
-                    onClick={() => setShowPreview(!showPreview)}
-                    className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                    {showPreview ? "Hide Route List" : "📋 List of Routes"}
-                </button>
-
-                {/* Clear Routes */}
-                <button
-                    disabled={!routeName && stops.length === 0 && !routeCoords}
-                    onClick={() => {
-                        setStops([]);
-                        setRouteCoords(null);
-                        setRouteName("");
-
-                        if (polylineRef) {
-                            polylineRef.setMap(null);
-                            setPolylineRef(null);
-                        }
+                <AddStopModal
+                    isOpen={isModalOpen}
+                    onClose={() => {
+                        setIsModalOpen(false)
+                        setStopName("")
+                        setSelectedLatLng(null)
                     }}
-                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 ml-2 cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
-                >
-                    🧼 Clear Route
-                </button>
+                    onSubmit={handleAddStop}
+                    stopName={stopName}
+                    setStopName={setStopName}
+                    selectedLatlng={selectedLatlng}
+                />
 
-                {showPreview && routes.length > 0 && (
-                    <div className="p-4 bg-gray-100 rounded shadow space-y-4">
-                        <h2 className="text-lg font-semibold">✅ Submitted Routes</h2>
+                <div className="flex gap-2">
+                    {/* List of Routes */}
+                    <ToggleRouteListButton
+                        showPreview={showPreview}
+                        setShowPreview={setShowPreview}
+                    />
 
-                        {routes.map((route, routeIndex) => (
-                            <div key={routeIndex} className="space-y-2">
+                    {/* Clear Routes */}
+                    <ClearRouteButton
+                        routeName={routeName}
+                        stops={stops}
+                        routeCoords={routeCoords}
+                        setRouteName={setRouteName}
+                        setStops={setStops}
+                        setRouteCoords={setRouteCoords}
+                        polylineRef={polylineRef}
+                        setPolylineRef={setPolylineRef}
+                    />
+                </div>
 
-                                <p><strong>Route Name:</strong> {route.name || <em className="text-gray-500">Unnamed</em>}</p>
-                                <p><strong>Total Stops:</strong> {route.stops?.length}</p>
+                <AnimatePresence>
 
-                                <div className="overflow-x-auto">
-                                    <table className="min-w-full bg-white rounded shadow">
-                                        <thead className="bg-green-100 text-green-800">
-                                            <tr>
-                                                <th className="px-4 py-2 text-left">#</th>
-                                                <th className="px-4 py-2 text-left">Stop Name</th>
-                                                <th className="px-4 py-2 text-left">Latitude</th>
-                                                <th className="px-4 py-2 text-left">Longitude</th>
-                                                <th className="px-4 py-2 text-left">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {route.stops && route.stops.map((stop, index) => (
-                                                <tr key={index} className="hover:bg-gray-50">
-                                                    <td className="px-4 py-2">{index + 1}</td>
-                                                    <td className="px-4 py-2">{stop.name}</td>
-                                                    <td className="px-4 py-2 text-sm text-gray-700">{stop.lat.toFixed(4)}</td>
-                                                    <td className="px-4 py-2 text-sm text-gray-700">{stop.lng.toFixed(4)}</td>
-                                                    <td className="px-4 py-2 space-x-2">
-                                                        {/* Edit */}
+                    {showPreview && routes.length > 0 && (
+                        <motion.div
+                            key="route-list"
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.3 }}
+                            className="p-4 bg-gray-100 rounded shadow space-y-4"
+                        >
+                            <h2 className="text-lg font-semibold">Submitted Routes</h2>
 
-                                                        <button
-                                                            onClick={() => {
-                                                                setEditStopIndex(index)
-                                                                setEditingRouteIndex(routeIndex);
-                                                                setEditedName(stop.name);
-                                                                setIsEditModalOpen(true);
-                                                            }}
-                                                            className="text-blue-600 hover:underline text-sm cursor-pointer"
-                                                        >
-                                                            Edit
-                                                        </button>
+                            {routes.map((route, routeIndex) => (
+                                <div key={routeIndex} className="space-y-2">
 
-                                                        <button
-                                                            onClick={() => {
-                                                                const updatedRoutes = [...routes]
-                                                                updatedRoutes[routeIndex].stops = route.stops?.filter((_, idx) => idx !== index) || []
-                                                                setRoutes(updatedRoutes)
-                                                            }}
-                                                            className="text-red-600 hover:underline text-sm cursor-pointer"
-                                                        >
-                                                            Delete
-                                                        </button>
-                                                    </td>
+                                    <p><strong>Route Name:</strong> {route.name || <em className="text-gray-500">Unnamed</em>}</p>
+                                    <p><strong>Total Stops:</strong> {route.stops?.length}</p>
+
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-sm text-left text-gray-700 border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                                            <thead className="bg-green-100 text-green-800 text-xs uppercase tracking-wide">
+                                                <tr>
+                                                    <th className="px-4 py-3">#</th>
+                                                    <th className="px-4 py-2 text-left">Latitude</th>
+                                                    <th className="px-4 py-3">Stop Name</th>
+                                                    <th className="px-4 py-3">Longitude</th>
+                                                    <th className="px-4 py-3">Actions</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody className="bg-white divide-y divide-gray-200">
+                                                {route.stops && route.stops.map((stop, index) => (
+                                                    <tr key={index} className="hover:bg-gray-50 transition-colors duration-150">
+                                                        <td className="px-4 py-2">{index + 1}</td>
+                                                        <td className="px-4 py-2">{stop.name}</td>
+                                                        <td className="px-4 py-2 text-sm text-gray-700">{stop.lat.toFixed(4)}</td>
+                                                        <td className="px-4 py-2 text-sm text-gray-700">{stop.lng.toFixed(4)}</td>
+                                                        <td className="px-4 py-2 space-x-2">
+                                                            {/* Edit */}
+
+                                                            <button
+                                                                onClick={() => {
+                                                                    setEditStopIndex(index)
+                                                                    setEditingRouteIndex(routeIndex);
+                                                                    setEditedName(stop.name);
+                                                                    setIsEditModalOpen(true);
+                                                                }}
+                                                                className="p-2 rounded-full hover:bg-blue-100 text-blue-600  transition duration-200 cursor-pointer"
+                                                                aria-label="Edit"
+                                                            >
+                                                                <Pencil size={18} strokeWidth={2} />
+                                                            </button>
+
+                                                            <button
+                                                                onClick={() => {
+                                                                    const updatedRoutes = [...routes]
+                                                                    updatedRoutes[routeIndex].stops = route.stops?.filter((_, idx) => idx !== index) || []
+                                                                    setRoutes(updatedRoutes)
+
+                                                                    toast.success("Stop deleted!", { icon: "🗑️" });
+                                                                }}
+                                                                className="p-2 rounded-full hover:bg-red-100 text-red-600  transition duration-200 cursor-pointer"
+                                                                aria-label="Delete"
+                                                            >
+                                                                <Trash2 size={16} />
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
+                            ))}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {isEditModalOpen && editStopIndex !== null && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                        <div className="bg-white backdrop-blur-md border border-white/20 p-6 rounded-xl shadow-lg w-full max-w-sm">
-                            <h2 className="text-lg font-semibold mb-4">✏️ Edit Stop</h2>
+                        <div className="bg-white backdrop-blur-md border border-white/20 p-6 rounded-xl shadow-2xl w-full max-w-sm">
+                            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                                <Pencil className="w-5 h-5" />
+                                Edit Stop
+                            </h2>
 
                             <input
                                 type="text"
@@ -340,7 +281,7 @@ export default function MapPage() {
                                         setEditStopIndex(null);
                                         setEditedName("");
                                     }}
-                                    className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 cursor-pointer"
+                                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 cursor-pointer transition"
                                 >
                                     Cancel
                                 </button>
@@ -351,6 +292,9 @@ export default function MapPage() {
                                             const updatedRoutes = [...routes];
                                             updatedRoutes[editingRouteIndex].stops![editStopIndex].name = editedName.trim()
                                             setRoutes(updatedRoutes);
+                                            toast.success("Stop name updated!", {
+                                                icon: "✏️",
+                                            });
                                         }
 
                                         setIsEditModalOpen(false);
@@ -358,7 +302,7 @@ export default function MapPage() {
                                         setEditedName("");
                                         setEditingRouteIndex(null);
                                     }}
-                                    className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 cursor-pointer"
+                                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 cursor-pointer transition"
                                 >
                                     Save Changes
                                 </button>

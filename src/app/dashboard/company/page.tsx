@@ -114,7 +114,7 @@ export default function CompanyPage() {
         <div className="p-4 sm:p-6 md:p-8 space-y-6">
 
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Jeepney Companies in Bacolod City</h1>
+                <h1 className="text-4xl md:text-3xl font-extrabold tracking-tight text-gray-900">Jeepney Companies in Bacolod City</h1>
                 <button
                     onClick={() => setShowAddModal(true)}
                     className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md w-full md:w-auto transition-transform hover:scale-105 cursor-pointer"
