@@ -1,12 +1,14 @@
 "use client"
 
-import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, Cell, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 const timeSpentData = [
-    { terminal: "Granada", time: 135 },
-    { terminal: "Homesite", time: 120 },
-    { terminal: "FortuneTowne", time: 150 },
+    { terminal: "Granada", value: 135 },
+    { terminal: "Homesite", value: 120 },
+    { terminal: "FortuneTowne", value: 150 }
 ]
+
+const COLORS = ["#6366f1", "#f59e0b", "#10b981"];
 
 const formatTime = (minutes: number) => {
     const hrs = Math.floor(minutes / 60);
@@ -14,23 +16,49 @@ const formatTime = (minutes: number) => {
     return `${hrs > 0 ? `${hrs}h` : ""}${mins}m`
 }
 
+const CustomLegend = () => {
+    return (
+        <div style={{ display: "flex", justifyContent: "center", gap: "1rem", marginTop: "0.5rem" }}>
+            {timeSpentData.map((entry, index) =>
+                <div key={entry.terminal} style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                    <span style={{
+                        display: "inline-block",
+                        width: 15,
+                        height: 15,
+                        backgroundColor: COLORS[index % COLORS.length]
+                    }} />
+
+                    <span>{entry.terminal}</span>
+                </div>
+            )}
+        </div>
+    )
+}
+
 export default function TimeSpentChart() {
     return (
         <div className="w-full h-[350px]">
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart
-                    layout="vertical"
                     data={timeSpentData}
                     barCategoryGap="30%"
                     margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
                 >
-                    <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
-                    <XAxis type="number" tickFormatter={formatTime} />
-                    <YAxis type="category" dataKey="terminal" tick={{ fontSize: 14 }} width={120} />
-                    <Tooltip formatter={(value: number) => formatTime(value)} />
-                    <Legend verticalAlign="bottom" height={16} />
-                    <Bar dataKey="time" name="Average Time" fill="#6366f1" isAnimationActive animationDuration={800} activeBar={{ fill: '#4338ca' }} barSize={20} />
+                    <XAxis dataKey="terminal" tick={{ fontSize: 14 }} />
+                    <YAxis type="number" tickFormatter={formatTime} />
 
+                    <Tooltip
+                        formatter={(value: number) => [formatTime(value), "Time Spent"]}
+                        labelFormatter={(label) => `Terminal: ${label}`}
+
+                    />
+                    <Legend content={<CustomLegend />} />
+
+                    <Bar dataKey="value" isAnimationActive>
+                        {timeSpentData.map((_, index) =>
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        )}
+                    </Bar>
                 </BarChart>
             </ResponsiveContainer>
         </div>
