@@ -30,7 +30,6 @@ const DateRangePicker: FC<Props> = ({ startDate, endDate, setStartDate, setEndDa
                     transition={{ duration: 0.3 }}
                 >
                     <DatePicker
-                        withPortal
                         id="start-date"
                         selected={startDate}
                         onChange={(date) => setStartDate(date as Date)}
@@ -60,7 +59,6 @@ const DateRangePicker: FC<Props> = ({ startDate, endDate, setStartDate, setEndDa
                     transition={{ duration: 0.3 }}
                 >
                     <DatePicker
-                        withPortal
                         id="end-date"
                         selected={endDate}
                         onChange={(date) => setEndDate(date as Date)}

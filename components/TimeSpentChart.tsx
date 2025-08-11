@@ -16,25 +16,6 @@ const formatTime = (minutes: number) => {
     return `${hrs > 0 ? `${hrs}h` : ""}${mins}m`
 }
 
-const CustomLegend = () => {
-    return (
-        <div style={{ display: "flex", justifyContent: "center", gap: "1rem", marginTop: "0.5rem" }}>
-            {timeSpentData.map((entry, index) =>
-                <div key={entry.terminal} style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                    <span style={{
-                        display: "inline-block",
-                        width: 15,
-                        height: 15,
-                        backgroundColor: COLORS[index % COLORS.length]
-                    }} />
-
-                    <span>{entry.terminal}</span>
-                </div>
-            )}
-        </div>
-    )
-}
-
 export default function TimeSpentChart() {
     return (
         <div className="w-full h-[350px]">
@@ -52,7 +33,6 @@ export default function TimeSpentChart() {
                         labelFormatter={(label) => `Terminal: ${label}`}
 
                     />
-                    <Legend content={<CustomLegend />} />
 
                     <Bar dataKey="value" isAnimationActive>
                         {timeSpentData.map((_, index) =>
