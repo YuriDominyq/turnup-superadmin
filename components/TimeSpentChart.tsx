@@ -1,6 +1,6 @@
 "use client"
 
-import { Bar, BarChart, Cell, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 const timeSpentData = [
     { terminal: "Granada", value: 135 },
